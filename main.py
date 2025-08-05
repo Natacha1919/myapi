@@ -1,11 +1,29 @@
-# main.py
-
 from fastapi import FastAPI
 # Importe o CORSMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 
 app = FastAPI()
+
+# =================================================================
+# ADICIONE ESTA SEÇÃO PARA CONFIGURAR O CORS
+# =================================================================
+# Defina as origens que terão permissão.
+# Usar ["*"] permite que QUALQUER origem acesse sua API.
+# É seguro para começar, especialmente para projetos públicos.
+origins = [
+    "*", 
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # Permite todos os métodos (GET, POST, etc)
+    allow_headers=["*"], # Permite todos os cabeçalhos
+)
+# =================================================================
+
 
 # =================================================================
 # CONFIGURAÇÃO DE CORS - BASEADO NA SUA ANÁLISE
@@ -42,7 +60,7 @@ df = pd.read_csv('Cronograma.csv')
 
 @app.get("/")
 def read_root():
-    return {"message": "Bem-vindo à API! CORS configurado corretamente."}
+    return {"message": "Bem-vindo à sua API de CSV!"}
 
 @app.get("/dados")
 def get_data():
@@ -50,8 +68,7 @@ def get_data():
 
 @app.get("/dados/{item_id}")
 def get_item(item_id: int):
-    # Garante que a coluna 'id' seja do tipo inteiro para a comparação funcionar
-    df['id'] = df['id'].astype(int)
+    # Filtra os dados pelo ID fornecido
     item = df[df['id'] == item_id]
     if not item.empty:
         return item.to_dict(orient='records')[0]
